@@ -5,8 +5,8 @@ Paste your Pushbullet access_token in a file named `access_token.txt` to generat
 
 ### Example
 Enter the bread order traversal with each element in a new line in `inp.txt` file.
-For eg. for the following breadth traversal 
-`[1, 2, 3, 'null', 5, 6, 7, 'null', 9, 'null', 'null', 12, 13, 14, 15, 'null', 'null', 'null', 19, 20, 21, 'null', 23, 'null', 25]`
+For eg. for the following breadth traversal <br>
+`[1, 2, 3, 'null', 5, 6, 7, 'null', 9, 'null', 'null', 12, 13, 14, 15, 'null', 'null', 'null', 19, 20, 21, 'null', 23, 'null', 25]`<br>
 Following will be generated
 #### Pretty-Print Tree
 ```text
