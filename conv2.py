@@ -4,8 +4,11 @@ from queue import Queue
 import json
 import requests
 from urllib.parse import urlencode, quote
+from pathlib import Path
 
-with open("access_token.txt") as f: ACCESS_TOKEN = f.read()
+ACCESS_TOKEN = ""
+if (Path.cwd() / "access_token.txt").is_file():
+    with open("access_token.txt") as f: ACCESS_TOKEN = f.read()
 # Definition for a binary tree node.
 class TreeNode:
     def __init__(self, x):
@@ -61,11 +64,11 @@ def prettyPrintTree(node, prefix="", isLeft=True):
         prettyPrintTree(node.left, prefix + ("    " if isLeft else "│   "), True)
 
 def get_link(graph_data):
-    with open("graph_data.txt", "w") as f: f.write(graph_data)
+    with open("graph_data_DOT.txt", "w") as f: f.write(graph_data)
 
-    resp = requests.post('https://api.pushbullet.com/v2/upload-request', data=json.dumps({'file_name': 'graph_data.txt'}), headers={'Authorization': 'Bearer ' + ACCESS_TOKEN, 'Content-Type': 'application/json'})
+    resp = requests.post('https://api.pushbullet.com/v2/upload-request', data=json.dumps({'file_name': 'graph_data_DOT.txt'}), headers={'Authorization': 'Bearer ' + ACCESS_TOKEN, 'Content-Type': 'application/json'})
     r = resp.json()
-    resp = requests.post(r['upload_url'], data=r['data'], files={'file': open('graph_data.txt', 'rb')})
+    resp = requests.post(r['upload_url'], data=r['data'], files={'file': open('graph_data_DOT.txt', 'rb')})
     print(json.dumps(r, indent = 4))
     return r['file_url']
 
@@ -91,14 +94,6 @@ custom_mark10
 
 def main():
 
-    n = int(input())
-    inputValues = np.arange(1, 2**n).tolist()
-    root = stringToTreeNode(inputValues)
-    prettyPrintTree(root)
-    # with open("inp.txt", "w") as f:
-    #     f.write('\n'.join([str(i) + ":" for i in range(1, 2**n)]))
-
-    # input()
     with open("inp.txt", "r") as f:
         lines = f.read().split('\n')
 
@@ -116,7 +111,7 @@ def main():
     root = stringToTreeNode(inputValues)
     prettyPrintTree(root)
 
-    q = Queue(maxsize = 2**n)
+    q = Queue(maxsize = len(lines))
     q.put(root)
     q.put("$")
     curr_val = 0
@@ -171,12 +166,28 @@ def main():
     print(json.dumps(mp, indent = 4))
 
     graph_data = generate_data(value_mappings, relation_mappings, mp)
-    return
+    with open("graph_data_DOT.txt", "w") as f:
+        f.write(graph_data)
+
+    if len(ACCESS_TOKEN) == 0:
+        return
+    
     graph_link = get_link(graph_data)
     print(graph_link)
+
     encoded_url = quote(graph_link)
-    final_url = "https://g.gravizo.com/source/svg/custom_mark10?" + encoded_url
-    print(final_url)
+    
+    final_svg_url = "https://g.gravizo.com/source/svg/custom_mark10?" + encoded_url
+    print("SVG URL :", final_svg_url)
+    svg_data = requests.get(final_svg_url)
+    with open("svg_file.svg", "wb") as f:
+        f.write(svg_data.content)
+
+    final_png_url = "https://g.gravizo.com/source/custom_mark10?" + encoded_url
+    print("PNG URL :", final_png_url)
+    png_data = requests.get(final_png_url)
+    with open("png_file.png", "wb") as f:
+        f.write(png_data.content)
     # relation_mappings_str = '\n'.join(relation_mappings)
     # value_mappings_str = '\n'.join([f"{node_name} = {mp[value_mappings[node_name]]}" for node_name in value_mappings])
     # print(value_mappings_str)
